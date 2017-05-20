@@ -11,6 +11,7 @@ public class Player : MonoBehaviour
     private List<Line> waypoints = new List<Line>();
     private int touchingPlatforms = 0;
 
+    private bool shouldCollide = true;
 
     // Update is called once per frame
     void Update()
@@ -25,6 +26,18 @@ public class Player : MonoBehaviour
                 waypoints.RemoveAt(0);
             }
         }
+    }
+
+    void OnEnable()
+    {
+        worldRotation.onRotationStarted += OnWorldRotationStarted;
+        worldRotation.onRotationFinished += OnWorldRotationFinished;
+    }
+
+    void OnDisable()
+    {
+        worldRotation.onRotationStarted -= OnWorldRotationStarted;
+        worldRotation.onRotationFinished -= OnWorldRotationFinished;
     }
 
     public void AddWaypoint(Line next)
@@ -49,12 +62,7 @@ public class Player : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        if(worldRotation.isRotating)
-        {
-            return;
-        }
-
-        if (other.CompareTag("Platform Chunk"))
+        if (shouldCollide && other.CompareTag("Platform Chunk"))
         {
             touchingPlatforms++;
         }
@@ -62,12 +70,7 @@ public class Player : MonoBehaviour
 
     void OnTriggerExit(Collider other)
     {
-        if (worldRotation.isRotating)
-        {
-            return;
-        }
-
-        if (other.CompareTag("Platform Chunk"))
+        if (shouldCollide && other.CompareTag("Platform Chunk"))
         {
             other.GetComponent<PlatformChunk>().Remove();
 
@@ -78,5 +81,19 @@ public class Player : MonoBehaviour
                 Debug.Log("Player touching no platforms");
             }
         }
+    }
+
+    private void OnWorldRotationStarted()
+    {
+        touchingPlatforms = 0;
+
+        RemoveAllWaypoints();
+
+        shouldCollide = false;
+    }
+
+    private void OnWorldRotationFinished()
+    {
+        shouldCollide = true;
     }
 }

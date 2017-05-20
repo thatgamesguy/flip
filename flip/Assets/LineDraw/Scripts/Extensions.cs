@@ -36,4 +36,9 @@ public static class Extensions
     {
         return new Vector3(a.x, a.y, z);
     }
+
+    public static bool IsApproximately(this float first, float second)
+    {
+        return second >= (first * 0.99f) && second <= (first * 1.01f);
+    }
 }
