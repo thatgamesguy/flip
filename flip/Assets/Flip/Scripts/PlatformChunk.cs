@@ -4,6 +4,10 @@ using UnityEngine;
 
 public class PlatformChunk : MonoBehaviour
 {
+    public float scaleSpeed = 2f;
+
+    private static readonly float MIN_SCALE = 0.1f;
+
     public void Remove()
     {
         StartCoroutine(DoRemove());
@@ -11,13 +15,13 @@ public class PlatformChunk : MonoBehaviour
 
     private IEnumerator DoRemove()
     {
-        while(transform.localScale.x >= 0f)
+        while(transform.localScale.x >= MIN_SCALE)
         {
-            transform.localScale -= Vector3.one * 2f * Time.deltaTime;
+            transform.localScale -= (Vector3)Vector2.one * scaleSpeed * Time.deltaTime;
 
             yield return null;
         }
 
-        Destroy(gameObject);
+        gameObject.SetActive(false);
     }
 }
