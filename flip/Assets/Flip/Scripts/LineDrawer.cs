@@ -6,22 +6,20 @@ using UnityEngine;
 public class LineDrawer : MonoBehaviour
 {
     public LayerMask worldMask;
-    public WorldRotation world;
     public Transform lineContainer;
     public Player player;
 
+    private static readonly float MAX_PLAYER_DIST = 0.8f;
     private static readonly float LINE_MAX_LENGTH = 0.25f;
 
     private LineFactory lineFactory;
     private Line drawnLine;
 
-    // Use this for initialization
     void Awake()
     {
         lineFactory = GetComponent<LineFactory>();
     }
 
-    // Update is called once per frame
     void Update()
     {
         if (Input.GetMouseButtonDown(0))
@@ -31,49 +29,45 @@ public class LineDrawer : MonoBehaviour
 
             if (Physics.Raycast(ray, out hit, worldMask))
             {
-                Vector3 startPos = hit.point;
-
-                if (drawnLine == null)
+                if (Vector3.Distance(player.transform.position, hit.point) > MAX_PLAYER_DIST)
                 {
-                    if (Vector3.Distance(player.transform.position, hit.point) > LINE_MAX_LENGTH)
-                    {
-                        return;
-                    }
-
-                    startPos = player.transform.position;
+                    return;
                 }
 
-                drawnLine = lineFactory.GetLine(startPos, hit.point, 0.1f, Color.black);
+                drawnLine = lineFactory.GetLine(player.transform.position, hit.point, 0.1f, Color.black);
                 drawnLine.transform.SetParent(lineContainer, true);
 
-                player.AddWayPoint(startPos);
+                player.RemoveAllWaypoints();
+                player.AddWaypoint(drawnLine);
             }
         }
-
-        if (drawnLine != null)
+        else if (Input.GetMouseButton(0))
         {
-            RaycastHit hit;
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-            if (Physics.Raycast(ray, out hit, worldMask))
+            if (drawnLine != null)
             {
-                if (Vector3.Distance(drawnLine.start, drawnLine.end) > LINE_MAX_LENGTH)
-                {
-                    drawnLine = lineFactory.GetLine(drawnLine.end, hit.point, 0.1f, Color.black);
-                    drawnLine.transform.SetParent(lineContainer, true);
+                RaycastHit hit;
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
-                    player.AddWayPoint(drawnLine.end);
-                }
-                else
+                if (Physics.Raycast(ray, out hit, worldMask))
                 {
-                    drawnLine.end = hit.point;
+                    if (Vector3.Distance(drawnLine.start, drawnLine.end) > LINE_MAX_LENGTH)
+                    {
+                        drawnLine = lineFactory.GetLine(drawnLine.end, hit.point, 0.1f, Color.black);
+                        drawnLine.transform.SetParent(lineContainer, true);
+
+                        player.AddWaypoint(drawnLine);
+                    }
+                    else
+                    {
+                        drawnLine.end = hit.point;
+                    }
                 }
-            }
-            else
-            {
-                //world.RotateLeft();
-                //drawnLine = null;
             }
         }
+        else if (Input.GetMouseButtonUp(0))
+        {
+            drawnLine = null;
+        }
+        
     }
 }
