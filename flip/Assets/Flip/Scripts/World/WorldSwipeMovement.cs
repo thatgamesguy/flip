@@ -4,6 +4,9 @@ public class WorldSwipeMovement : MonoBehaviour
 {
     public WorldRotation worldRotation;
 
+    public bool handleHorizontalSwipes = true;
+    public bool handleVerticalSwipes = true;
+
     public float minSwipeVelocity = 500f;
     public float minSwipeDistance = 50f;
 
@@ -24,6 +27,11 @@ public class WorldSwipeMovement : MonoBehaviour
             return;
         }
         */
+
+        if(!handleHorizontalSwipes && !handleVerticalSwipes)
+        {
+            return;
+        }
 
         if (Input.GetMouseButtonDown(0))
         {
@@ -52,15 +60,15 @@ public class WorldSwipeMovement : MonoBehaviour
                 angleOfSwipe = Mathf.Acos(angleOfSwipe) * Mathf.Rad2Deg;
 
                 // Detect left and right swipe
-                if (angleOfSwipe < mAngleRange)
+                if (handleHorizontalSwipes && angleOfSwipe < mAngleRange)
                 {
                     worldRotation.RotateRight();
                 }
-                else if ((180.0f - angleOfSwipe) < mAngleRange)
+                else if (handleHorizontalSwipes && (180.0f - angleOfSwipe) < mAngleRange)
                 {
                     worldRotation.RotateLeft();
                 }
-                else
+                else if (handleVerticalSwipes)
                 {
                     // Detect top and bottom swipe
                     angleOfSwipe = Vector2.Dot(swipeVector, Y_AXIS);

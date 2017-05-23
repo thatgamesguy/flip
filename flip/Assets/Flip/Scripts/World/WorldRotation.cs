@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Collections;
 using UnityEngine;
 
 public class WorldRotation : MonoBehaviour
 {
-    public float rotateSmooth = 2f;  
+    public float rotationTime = 0.8f;  
 
     public Action onRotationStarted;
     public Action onRotationFinished;
@@ -18,70 +19,90 @@ public class WorldRotation : MonoBehaviour
 
     public void RotateLeft()
     {
+        if(startedRotating)
+        {
+            return;
+        }
+
         targetRotation *= Quaternion.AngleAxis(90f, Vector3.up);
+
+        StartCoroutine(RotateToTarget());
 
         if(onRotationStarted != null)
         {
             onRotationStarted();
         }
-
-        startedRotating = true;
     }
 
     public void RotateRight()
     {
+        if(startedRotating)
+        {
+            return;
+        }
+
         targetRotation *= Quaternion.AngleAxis(-90f, Vector3.up);
+
+        StartCoroutine(RotateToTarget());
 
         if (onRotationStarted != null)
         {
             onRotationStarted();
         }
-
-        startedRotating = true;
     }
 
     public void RotateDown()
     {
+        if (startedRotating)
+        {
+            return;
+        }
+
         targetRotation *= Quaternion.AngleAxis(-90f, Vector3.right);
+
+        StartCoroutine(RotateToTarget());
 
         if (onRotationStarted != null)
         {
             onRotationStarted();
         }
-
-        startedRotating = true;
     }
 
     public void RotateUp()
     {
+        if (startedRotating)
+        {
+            return;
+        }
+
         targetRotation *= Quaternion.AngleAxis(90f, Vector3.right);
+
+        StartCoroutine(RotateToTarget());
 
         if (onRotationStarted != null)
         {
             onRotationStarted();
         }
-
-        startedRotating = true;
     }
 
-    void Update()
+    private IEnumerator RotateToTarget()
     {
-        if(startedRotating)
+        startedRotating = true; 
+
+        for (float t = 0.0f; t < rotationTime; t += Time.deltaTime)
         {
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotateSmooth * Time.deltaTime);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, t / rotationTime);
 
-            if (transform.rotation.x.IsApproximately(targetRotation.x) &&
-                transform.rotation.y.IsApproximately(targetRotation.y))
-            {
-                startedRotating = false;
+            yield return null;
+        }
 
-                transform.rotation = targetRotation;
+        startedRotating = false;
 
-                if(onRotationFinished != null)
-                {
-                    onRotationFinished();
-                }
-            }
+        transform.rotation = targetRotation;
+
+        if (onRotationFinished != null)
+        {
+            onRotationFinished();
         }
     }
 }
